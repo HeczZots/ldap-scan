@@ -508,7 +508,7 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 
 	searchResult := new(SearchResult)
 	for {
-		result, err := l.Search(searchRequest)
+		result, _, err := l.Search(searchRequest)
 		if result != nil {
 			result.appendTo(searchResult)
 		} else {
@@ -543,7 +543,7 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 	if pagingControl != nil {
 		l.Debug.Printf("Abandoning Paging...")
 		pagingControl.PagingSize = 0
-		if _, err := l.Search(searchRequest); err != nil {
+		if _, _, err := l.Search(searchRequest); err != nil {
 			return searchResult, err
 		}
 	}
@@ -552,10 +552,10 @@ func (l *Conn) SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32)
 }
 
 // Search performs the given search request
-func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
+func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, *ber.Packet, error) {
 	msgCtx, err := l.doRequest(searchRequest)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer l.finishMessage(msgCtx)
 
@@ -568,7 +568,7 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 	for {
 		packet, err := l.readPacket(msgCtx)
 		if err != nil {
-			return result, err
+			return result, nil, err
 		}
 
 		switch packet.Children[1].Tag {
@@ -576,7 +576,7 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 			if searchRequest.EnforceSizeLimit &&
 				searchRequest.SizeLimit > 0 &&
 				len(result.Entries) >= searchRequest.SizeLimit {
-				return result, ErrSizeLimitExceeded
+				return result, packet, ErrSizeLimitExceeded
 			}
 
 			attr := make([]*ber.Packet, 0)
@@ -591,18 +591,18 @@ func (l *Conn) Search(searchRequest *SearchRequest) (*SearchResult, error) {
 		case 5:
 			err := GetLDAPError(packet)
 			if err != nil {
-				return result, err
+				return result, packet, err
 			}
 			if len(packet.Children) == 3 {
 				for _, child := range packet.Children[2].Children {
 					decodedChild, err := DecodeControl(child)
 					if err != nil {
-						return result, fmt.Errorf("failed to decode child control: %s", err)
+						return result, packet, fmt.Errorf("failed to decode child control: %s", err)
 					}
 					result.Controls = append(result.Controls, decodedChild)
 				}
 			}
-			return result, nil
+			return result, packet, nil
 		case 19:
 			result.Referrals = append(result.Referrals, packet.Children[1].Children[0].Value.(string))
 		}
@@ -676,7 +676,7 @@ func (l *Conn) DirSync(
 			return nil, fmt.Errorf("MaxAttrCnt given in search request (%d) conflicts with maxAttrCount given in search call (%d)", c.MaxAttrCount, maxAttrCount)
 		}
 	}
-	searchResult, err := l.Search(searchRequest)
+	searchResult, _, err := l.Search(searchRequest)
 	l.Debug.Printf("Looking for result...")
 	if err != nil {
 		return nil, err
