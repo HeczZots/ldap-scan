@@ -166,7 +166,7 @@ func TestFinishMessage(t *testing.T) {
 // See: https://github.com/go-ldap/ldap/issues/332
 func TestNilConnection(t *testing.T) {
 	var conn *Conn
-	_, err := conn.Search(&SearchRequest{})
+	_, _, err := conn.Search(&SearchRequest{})
 	if err != ErrNilConnection {
 		t.Fatalf("expected error to be ErrNilConnection, got %v", err)
 	}

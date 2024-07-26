@@ -41,7 +41,7 @@ func ExampleConn_Search() {
 		nil,
 	)
 
-	sr, err := l.Search(searchRequest)
+	sr, _, err := l.Search(searchRequest)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -267,7 +267,7 @@ func Example_userAuthentication() {
 		nil,
 	)
 
-	sr, err := l.Search(searchRequest)
+	sr,_, err := l.Search(searchRequest)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -391,7 +391,7 @@ func ExampleControlPaging_manualPaging() {
 
 	for {
 		request := NewSearchRequest(searchBase, ScopeWholeSubtree, DerefAlways, 0, 0, false, filter, attributes, controls)
-		response, err := conn.Search(request)
+		response,_, err := conn.Search(request)
 		if err != nil {
 			log.Fatalf("Failed to execute search request: %s", err.Error())
 		}

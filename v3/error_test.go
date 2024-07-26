@@ -132,7 +132,7 @@ func TestConnReadErr(t *testing.T) {
 	// This should block until the underlying conn gets the error signal
 	// which should bubble up through the reader() goroutine, close the
 	// connection, and
-	_, err := ldapConn.Search(searchReq)
+	_, _, err := ldapConn.Search(searchReq)
 	if err == nil || !strings.Contains(err.Error(), expectedError.Error()) {
 		t.Errorf("not the expected error: %s", err)
 	}

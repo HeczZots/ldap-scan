@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"time"
+
+	ber "github.com/go-asn1-ber/asn1-ber"
 )
 
 // Client knows how to interact with an LDAP server
@@ -32,7 +34,7 @@ type Client interface {
 	Compare(dn, attribute, value string) (bool, error)
 	PasswordModify(*PasswordModifyRequest) (*PasswordModifyResult, error)
 
-	Search(*SearchRequest) (*SearchResult, error)
+	Search(*SearchRequest) (*SearchResult, *ber.Packet, error)
 	SearchAsync(ctx context.Context, searchRequest *SearchRequest, bufferSize int) Response
 	SearchWithPaging(searchRequest *SearchRequest, pagingSize uint32) (*SearchResult, error)
 	DirSync(searchRequest *SearchRequest, flags, maxAttrCount int64, cookie []byte) (*SearchResult, error)

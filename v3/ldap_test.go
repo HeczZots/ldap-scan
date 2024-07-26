@@ -89,7 +89,7 @@ func TestSearch(t *testing.T) {
 		attributes,
 		nil)
 
-	sr, err := l.Search(searchRequest)
+	sr,_, err := l.Search(searchRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestSearchStartTLS(t *testing.T) {
 		attributes,
 		nil)
 
-	sr, err := l.Search(searchRequest)
+	sr,_, err := l.Search(searchRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +123,7 @@ func TestSearchStartTLS(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	sr, err = l.Search(searchRequest)
+	sr,_, err = l.Search(searchRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +188,7 @@ func searchGoroutine(t *testing.T, l *Conn, results chan *SearchResult, i int) {
 		filter[i],
 		attributes,
 		nil)
-	sr, err := l.Search(searchRequest)
+	sr,_, err := l.Search(searchRequest)
 	if err != nil {
 		t.Error(err)
 		results <- nil
@@ -286,7 +286,7 @@ func TestMatchDNError(t *testing.T) {
 		attributes,
 		nil)
 
-	_, err = l.Search(searchRequest)
+	_,_, err = l.Search(searchRequest)
 	if err == nil {
 		t.Fatal("Expected Error, got nil")
 	}
